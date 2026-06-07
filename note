@@ -1,0 +1,142 @@
+Chào bạn! Tôi là **Đối tác lập trình** của bạn. Mục đích chính của tôi là hỗ trợ bạn viết mã hoàn chỉnh, sửa lỗi, giải thích cấu trúc code và cung cấp tài liệu kỹ thuật rõ ràng để giúp dự án của bạn thành công. Tuyệt đối chúng ta sẽ không thảo luận vấn đề gì nằm ngoài phạm vi lập trình hệ thống này.
+
+Dưới đây là thông tin tổng quan về giải pháp thiết kế dựa trên các ảnh thực tế (`image_f6857d.jpg`, `dichvupage.jpg`, `image_f6853d.png`):
+
+* **Quản lý tệp tin tĩnh (Static Assets):** Thay vì sử dụng link ảnh online, mã nguồn React sẽ trực tiếp gọi các file ảnh từ thư mục public `/screenshots/` (như `logo.png`, `background.png`, `image1.png` đến `image6.png`).
+* **Xử lý Giao diện Động:** Trang hiển thị công khai (`WebpagePreviewPage.jsx`) sẽ kiểm tra tham số `:code` trên URL. Nếu là `home`, hệ thống hiển thị cấu trúc trang chủ công nghệ kèm bảng thông tin doanh nghiệp (Mã số thuế: 0402233050). Nếu là `dichvu`, hệ thống render chuyên trang dịch vụ gồm 3 cột giải pháp lớn, khối "Vì sao chọn The ALAB" và quy trình làm việc 4 bước.
+
+---
+
+## 1. 📄 Nội dung file `plan.md` (Bản chỉnh sửa hoàn chỉnh)
+
+Bạn hãy sao chép toàn bộ nội dung trong hộp mã dưới đây để tạo thành file `plan.md` của mình:
+
+```markdown
+# KẾ HOẠCH TRIỂN KHAI — THEALAB WEBSITE (BẢN CHUẨN ĐỒ HỌA SCREENSHOTS)
+> Phiên bản: 1.2 · Cập nhật cấu trúc hình ảnh tĩnh và giao diện The ALAB
+> Backend: Django DRF · Port 1451 · SQLite  
+> Frontend: React 19 + Vite 8 + TailwindCSS v3 · Port 1457
+
+---
+
+## Trạng thái hiện tại (đã xác nhận)
+
+### Backend (`/backend`)
+| File | Trạng thái |
+|------|-----------|
+| `core/settings.py` | Đầy đủ: CORS, REST_FRAMEWORK, TokenAuth, INSTALLED_APPS |
+| `api/views.py` | Chỉ có `login_view` (POST, AllowAny) |
+| `api/urls.py` | Chỉ có `POST /api/auth/login/` |
+| `api/models.py` | Rỗng — chưa có model nào |
+| `api/admin.py` | Rỗng |
+| `api/migrations/` | Chỉ có `__init__.py` — chưa có migration nào |
+| `requirements.txt` | Đầy đủ: DRF, corsheaders, gunicorn, whitenoise |
+
+### Frontend (`/frontend-web`)
+| File | Trạng thái |
+|------|-----------|
+| `vite.config.js` | Proxy `/api/*` → `http://localhost:1451` đã có |
+| `src/App.jsx` | Chỉ có form login đơn giản, dùng `fetch()` native |
+| `src/main.jsx` | Chưa có Router |
+| `package.json` | Thiếu: `react-router-dom`, `axios` |
+| `src/pages/`, `src/components/`, `src/services/` | Chưa tồn tại |
+| `public/screenshots/` | Đầy đủ asset: `logo.png`, `background.png`, `image1.png` -> `image6.png` |
+
+---
+
+## Phần 1 · Danh sách file cần tạo/sửa
+
+### 1.1 Backend — Sửa đổi/Tạo mới
+- `api/models.py`: Thêm model `Webpage` (gồm các trường: `id`, `code`, `title`, `content`, `created_at`). Trường `code` có validator regex giới hạn ký tự chữ thường, số, dấu `-` và `_`.
+- `api/serializers.py` *(Tạo mới)*: Khai báo các class Serializer phục vụ Auth (đổi username, đổi mật khẩu) và Webpage CRUD.
+- `api/permissions.py` *(Tạo mới)*: Viết custom permission `IsAdminUser` kiểm tra quyền `is_staff` hoặc `is_superuser`.
+- `api/views.py` & `api/urls.py`: Thêm đầy đủ logic và các tuyến dẫn cho Đăng xuất, Đổi tài khoản, cụm CRUD bài viết và endpoint preview công khai.
+
+### 1.2 Frontend — Sửa đổi/Tạo mới
+- `tailwind.config.js`: Định nghĩa thêm hai mã màu thương hiệu: `alab-green: '#3ea54a'` và `alab-navy: '#0a2540'`.
+- `src/services/api.js` *(Tạo mới)*: Cấu hình Axios Instance tự động gắn token header dạng `Authorization: Token <token_key>`.
+- `src/App.jsx` & `src/main.jsx`: Cấu hình hệ thống React Router điều hướng.
+- Các trang chức năng quản trị (`src/pages/`): `LoginPage.jsx`, `DashboardPage.jsx` (bảng danh sách tích hợp bộ lọc và tìm kiếm), `AccountPage.jsx` (form đổi username/password).
+- Trang công khai tĩnh (`src/pages/WebpagePreviewPage.jsx`): Render giao diện tùy biến dựa theo tham số mã trang trên URL, sử dụng trực tiếp các asset từ `/screenshots/`.
+
+---
+
+## Phần 2 · Quy chuẩn Giao diện Nhận diện Thương hiệu (Tailwind v3)
+
+### 2.1 Cấu hình Tailwind mở rộng
+Hệ thống giao diện sử dụng mã màu mở rộng bám sát theo tệp thiết kế thực tế:
+*   `alab-green` (`#3ea54a`): Dùng cho hệ thống nút bấm hành động, viền icon, và dải băng bản quyền đáy trang.
+*   `alab-navy` (`#0a2540`): Dùng cho toàn bộ hệ thống chữ tiêu đề, đề mục lớn.
+
+### 2.2 Cấu trúc Trang Công Khai Động (`WebpagePreviewPage.jsx`)
+Trang web sử dụng chung cấu trúc thanh điều hướng Header (chứa Menu và Logo `/screenshots/logo.png`) và Footer (chứa thông tin mã số thuế `0402233050`, địa chỉ Đà Nẵng, hotline, email). Phần thân trang (Body) thay đổi linh hoạt:
+
+*   **Khi URL là `/preview/home` (Giao diện Trang chủ):**
+    - Khối Banner lớn dùng hình nền `/screenshots/background.png` kết hợp hình minh họa máy tính laptop.
+    - Khối Giới thiệu có bảng thông số doanh nghiệp hiển thị rõ ràng (Mã số thuế, ngày lập 25/04/2024, ngành nghề).
+    - Khối chân trang Footer đồng bộ theo ảnh thực tế.
+*   **Khi URL là `/preview/dichvu` (Giao diện Trang dịch vụ):**
+    - Hiển thị banner phụ "Dịch vụ của chúng tôi".
+    - Render 3 thẻ card giải pháp bo góc mềm mại, đổ bóng nhẹ, tương ứng với 3 ảnh minh họa công nghệ: `01` - `/screenshots/image4.png`, `02` - `/screenshots/image5.png`, `03` - `/screenshots/image3.png`.
+    - Hiển thị phần "Vì sao chọn The ALAB" kèm quy trình làm việc 4 bước mắc xích logic (Sử dụng icon hoặc ký hiệu đồ họa phù hợp).
+
+---
+
+## Phần 3 · Quy trình Thực thi Hệ thống
+
+### Giai đoạn 1: Khởi chạy và Seed Data phía Backend
+1. Chạy các lệnh phát hiện và thực thi database: `python manage.py makemigrations` và `python manage.py migrate`.
+2. Chạy script tạo sẵn tài khoản quản trị tối cao (`admin` / `12345`).
+3. Tự động chèn sẵn dữ liệu (Seed Data) ban đầu cho 2 trang có mã `home` (tiêu đề: Trang chủ) và `dichvu` (tiêu đề: Dịch vụ) vào SQLite để frontend có dữ liệu render ngay lập tức.
+
+### Giai đoạn 2: Xây dựng và Kết nối Frontend
+1. Cài đặt các thư viện lõi: `npm install react-router-dom axios`.
+2. Tạo cấu trúc Axios Interceptor điều phối Token.
+3. Hoàn thiện các view quản trị (Admin Dashboard có thanh Search sử dụng debounce xử lý độ trễ 300ms) và trang xem trước công khai (Render chuẩn bố cục ảnh công ty công nghệ).
+
+```
+
+---
+
+## 2. 🚀 Siêu Prompt gửi Claude Code để Triển khai Dự án
+
+Sau khi bạn đã chuẩn bị xong file `plan.md` ở trên trong thư mục gốc của dự án, hãy copy toàn bộ đoạn text dưới đây và dán vào cửa sổ dòng lệnh của **Claude Code** để kích hoạt hệ thống tự động sinh code:
+
+```text
+Hãy đọc kỹ nội dung file kế hoạch `plan.md` đã được cấu hình tại thư mục gốc và phân tích thư mục tài nguyên ảnh tĩnh có sẵn trong `/screenshots/` để tiến hành xây dựng toàn bộ ứng dụng website công ty "The ALAB Data Technology".
+
+Tôi cấp quyền tự quyết cao nhất cho bạn (mặc định sử dụng flag -y cho tất cả các thao tác terminal và ghi file trên ổ đĩa) để hoàn thành ứng dụng mà không cần dừng lại hỏi ý kiến của tôi. Yêu cầu triển khai chi tiết:
+
+1. THIẾT LẬP DATABASE & SEED DATA (Backend Django DRF - Port 1451):
+   - Tạo model Webpage đầy đủ các trường cấu trúc (`code`, `title`, `content`, `created_at`) trong `api/models.py`. Trường `code` sử dụng RegexValidator chỉ cho phép chữ thường, số, dấu gạch ngang/gạch dưới.
+   - Viết và thực thi một script shell hoặc lệnh migrations tự động tạo tài khoản admin (ID: admin / Pass: 12345) cùng hai bản ghi dữ liệu nền tảng ban đầu: bản ghi có code="home" (Trang chủ) và bản ghi có code="dichvu" (Dịch vụ).
+   - Xây dựng cụm API xác thực (Login, Logout, Change Username, Change Password) và cụm API CRUD Webpage. Tại API List View, xử lý bộ lọc tìm kiếm (Search qua Q objects cho cả ba trường code, title, content), sắp xếp (Sort) theo ngày tạo mà không sử dụng thư viện ngoài.
+
+2. CẤU HÌNH & XÂY DỰNG KHUNG HỆ THỐNG (Frontend React Vite - Port 1457):
+   - Cài đặt hai thư viện bắt buộc: `react-router-dom` và `axios`.
+   - Cấu hình file `tailwind.config.js` để mở rộng bảng màu thương hiệu chuẩn: màu xanh lá cây `alab-green: '#3ea54a'` và màu xanh dương đậm `alab-navy: '#0a2540'`.
+   - Thiết lập Axios Instance (`src/services/api.js`) xử lý tự động đính kèm mã token dạng "Authorization: Token <token_key>".
+   - Xây dựng các trang quản trị admin hoàn chỉnh bao gồm: LoginPage, DashboardPage (quản lý danh sách các trang, tích hợp bộ lọc sắp xếp và thanh tìm kiếm có xử lý debounce 300ms), và AccountPage để thay đổi thông tin cá nhân. Bảo vệ các tuyến đường này bằng component ProtectedRoute.
+
+3. HOÀN THIỆN TRANG HIỂN THỊ ĐỘNG CÔNG KHAI (WebpagePreviewPage.jsx):
+   - Khi Reader truy cập vào đường dẫn `/preview/:code`, component này sẽ đọc tham số `:code` trên URL để render chuẩn giao diện nhận diện công nghệ:
+     + Nếu `:code` là 'home': Render cấu trúc Trang Chủ bám sát ảnh thiết kế image_f6857d.jpg. Sử dụng hình nền máy tính kết hợp tệp `/screenshots/background.png`, hiển thị khối giới thiệu đối tác tin cậy, nhúng bảng thông tin doanh nghiệp chi tiết (Mã số thuế: 0402233050, Ngày thành lập: 25/04/2024), và chân trang Footer chứa đúng thông tin địa chỉ Đà Nẵng, số hotline, email.
+     + Nếu `:code` là 'dichvu': Render cấu trúc chuyên trang Dịch Vụ bám sát ảnh dichvupage.jpg. Hiển thị khối 3 cột giải pháp lớn bo góc mềm mại, đổ bóng nhẹ, gọi các asset tĩnh tương ứng từ thư mục public: Dịch vụ 01 dùng `/screenshots/image4.png`, Dịch vụ 02 dùng `/screenshots/image5.png`, Dịch vụ 03 dùng `/screenshots/image3.png`. Kèm theo khối lý do "Vì sao chọn The ALAB" và quy trình làm việc 4 bước liên kết nhau.
+   - Thanh điều hướng chung (Navbar chứa logo `/screenshots/logo.png` và nút "Liên hệ ngay" bo góc xanh lá) cùng chân trang (Footer có dải băng bản quyền màu xanh lá cây ở đáy) phải được hiển thị đồng bộ trên cả hai trạng thái trang công khai này.
+
+Hãy tự động chạy lệnh makemigrations, migrate, chạy script đổ dữ liệu mẫu và viết toàn bộ các tệp tin mã nguồn hoàn chỉnh ngay lập tức!
+
+```
+
+---
+
+### Hướng dẫn kiểm tra sau khi triển khai:
+
+Khi công cụ sinh mã tự động chạy xong, bạn chỉ cần chạy hai server độc lập bằng terminal của mình để kiểm thử hệ thống:
+
+1. **Backend (Port 1451):** Truy cập thư mục `/backend` và chạy `python manage.py runserver 1451`.
+2. **Frontend (Port 1457):** Truy cập thư mục `/frontend-web` và chạy `npm run dev`.
+
+Bạn tiến hành truy cập `http://localhost:1457/preview/home` và `http://localhost:1457/preview/dichvu` để xem kết quả hiển thị giao diện động đã chuẩn hóa theo đúng tệp tài nguyên hình ảnh thương hiệu nhé.
+
+Nếu có bất kỳ đoạn mã nào do AI sinh ra khiến bạn chưa hiểu rõ hoặc có thông báo lỗi phát sinh, hãy chia sẻ đoạn code đó tại đây, tôi sẽ giải thích chi tiết và hướng dẫn bạn khắc phục ngay lập tức!

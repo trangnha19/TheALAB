@@ -1,0 +1,55 @@
+/* =========================================================
+   TheALAB Website — Global Styles
+   ========================================================= */
+
+/* Import font Inter từ Google Fonts — font chuẩn công ty công nghệ */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap');
+
+/* Tailwind CSS directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base reset ── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Nunito Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    @apply text-slate-800 bg-white;
+  }
+}
+
+/* ── Custom utilities ── */
+@layer utilities {
+  /* Ẩn scrollbar nhưng vẫn cuộn được */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Viền focus chuẩn alab-green */
+  .focus-alab {
+    @apply focus:outline-none focus:ring-2 focus:ring-alab-green/25 focus:border-alab-green;
+  }
+}
+
+/* ── Tailwind prose override cho render HTML ── */
+/* Dùng giá trị màu trực tiếp để tránh lỗi @apply ngoài @layer */
+.prose h2     { color: #0a2540; }
+.prose h3     { color: #0a2540; }
+.prose a      { color: #3ea54a; }
+.prose a:hover { color: #15803d; }
+.prose strong  { color: #0a2540; }
